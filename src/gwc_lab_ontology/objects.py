@@ -40,9 +40,6 @@ class Measurement:
     timestamp: Optional[datetime] = None
 
 
-# TODO Change null values to empty lists everywhere 
-
-@dataclass
 class Well:
 
     """
@@ -53,8 +50,22 @@ class Well:
         measurements (List[Measurement]): A list of measurements taken from this well.
     """
 
-    position: str  # e.g. "A1"
-    measurements: List[Measurement]
+    def __init__(
+        self, 
+        position: str, 
+        measurements: Optional[List[Measurement]] = []
+    ):
+        self.position = position
+        
+        # Ensure all measurements in a well have the same sample
+        if measurements: 
+            first_sample = measurements[0].sample if measurements[0].sample else None
+            if first_sample:
+                for measurement in measurements:
+                    assert measurement.sample == first_sample, "All measurements in a well must have the same sample."
+
+        self.measurements = measurements
+            
 
     @property
     def sample(self):
@@ -63,6 +74,7 @@ class Well:
             return self.measurements[0].sample
         return None
     
+    
     def add_measurement(self, measurement: Measurement):
         """Adds a measurement to the well."""
         if self.measurements:
@@ -70,14 +82,6 @@ class Well:
             self.measurements.append(measurement)
         else:
             self.measurements = [measurement]
-
-    def __post_init__(self):
-        
-        if self.measurements:
-            sample = self.measurements[0].sample
-            for measurement in self.measurements:
-                assert measurement.sample == sample, "All measurements in a well must have the same sample."
-        self.measurements = None 
 
 
 
@@ -98,3 +102,8 @@ class Microplate:
     wells: Dict[str, Well] 
     n_rows: int
     n_columns: int
+
+
+
+
+
